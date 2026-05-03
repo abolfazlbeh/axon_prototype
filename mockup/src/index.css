@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-axon-bg: #0d0e13;
+  --color-axon-surface: #13151c;
+  --color-axon-border: #1e2130;
+  --color-axon-muted: #3a3f52;
+  --color-axon-text: #c8cad4;
+  --color-axon-heading: #f0f1f5;
+  --color-axon-accent: #6c63ff;
+  --color-axon-accent-dim: rgba(108, 99, 255, 0.15);
+  --color-axon-accent-border: rgba(108, 99, 255, 0.4);
+  --color-axon-green: #34d399;
+  --color-axon-amber: #fbbf24;
+  --color-axon-red: #f87171;
+
+  --font-sans: "Inter", "system-ui", sans-serif;
+  --font-mono: "JetBrains Mono", "ui-monospace", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0d0e13;
+  color: #c8cad4;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #13151c;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2130;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3f52;
+}
+
+.prose p { margin-bottom: 0.875rem; line-height: 1.7; }
+.prose p:last-child { margin-bottom: 0; }
