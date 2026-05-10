@@ -1,6 +1,9 @@
 // Each diagram is a standalone SVG illustration keyed by a string ID.
 // New diagrams can be added here without touching any other component.
 
+import type { ReactElement } from 'react'
+import { PythonRuntimeTypingDiagram } from './diagrams/PythonRuntimeTypingDiagram'
+
 interface DiagramProps {
   id: string
   caption?: string
@@ -294,9 +297,10 @@ function KinematicEquationChooserDiagram() {
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
-const DIAGRAMS: Record<string, () => JSX.Element> = {
+const DIAGRAMS: Record<string, () => ReactElement> = {
   'python-scope': PythonScopeDiagram,
   'python-list-indexing': PythonListIndexingDiagram,
+  'python-runtime-typing': PythonRuntimeTypingDiagram,
   'displacement-vs-distance': DisplacementVsDistanceDiagram,
   'vector-vs-scalar': VectorVsScalarDiagram,
   'free-body-diagram': FreeBodyDiagram,
@@ -307,9 +311,17 @@ const DIAGRAMS: Record<string, () => JSX.Element> = {
 
 export function DiagramBlock({ id, caption }: DiagramProps) {
   const Diagram = DIAGRAMS[id]
+  const managesOwnChrome = id === 'python-runtime-typing'
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="rounded-xl overflow-hidden bg-[#13151c] border border-[#1e2130] p-3 flex items-center justify-center">
+    <div className="flex min-h-0 w-full flex-col gap-2">
+      <div
+        className={
+          managesOwnChrome
+            ? 'flex w-full min-h-0 flex-col items-stretch overflow-visible rounded-xl border border-[#1e2130] bg-[#13151c] p-2 sm:p-3'
+            : 'flex min-h-0 w-full max-h-[min(72vh,640px)] items-center justify-center overflow-y-auto rounded-xl border border-[#1e2130] bg-[#13151c] p-3'
+        }
+      >
         {Diagram ? <Diagram /> : (
           <div className="text-xs text-[#3a3f52] p-6">Diagram "{id}" not found</div>
         )}

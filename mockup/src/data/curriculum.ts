@@ -1,6 +1,20 @@
+import { englishPhrasalVerbsCurriculum } from './englishPhrasalCurriculum'
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ContentType = 'text' | 'heading' | 'image' | 'chart' | 'code' | 'quiz' | 'input' | 'diagram' | 'audio' | 'video'
+export type ContentType =
+  | 'text'
+  | 'heading'
+  | 'image'
+  | 'chart'
+  | 'code'
+  | 'quiz'
+  | 'input'
+  | 'diagram'
+  | 'audio'
+  | 'video'
+  | 'htmlcss'
+  | 'htmlquiz'
 
 export type LayoutTemplate =
   | 'single-col'
@@ -59,6 +73,22 @@ export interface VideoContent {
   props: { title: string; duration: string; description: string; thumbnail?: string }
 }
 
+export interface HtmlCssContent {
+  type: 'htmlcss'
+  props: { html: string; caption?: string }
+}
+
+export interface HtmlQuizContent {
+  type: 'htmlquiz'
+  props: {
+    questionHtml: string
+    choiceHtmls: string[]
+    correct: number
+    explanation: string
+    questionPlain?: string
+  }
+}
+
 export type SlideContent =
   | TextContent
   | HeadingContent
@@ -69,6 +99,8 @@ export type SlideContent =
   | DiagramContent
   | AudioContent
   | VideoContent
+  | HtmlCssContent
+  | HtmlQuizContent
 
 export interface Slide {
   id: string
@@ -101,6 +133,8 @@ export interface Curriculum {
   estimatedMinutes: number
   chapters: Chapter[]
   createdAt: string
+  /** When true, overview UI treats the course as one continuous stream (no "Chapter N —" prefix). */
+  streamMode?: boolean
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -232,7 +266,7 @@ x = "ten"    # now str — Python allows this`,
           purpose: 'Audio narration: how Python infers types at runtime',
           layout: {
             template: 'two-col',
-            regions: { left: 'audio_1', right: 'image_1' },
+            regions: { left: 'audio_1', right: 'diagram_1' },
           },
           content: {
             audio_1: {
@@ -244,12 +278,12 @@ x = "ten"    # now str — Python allows this`,
                   'A short narration walking through how Python decides what type a variable is at runtime — and why that differs from statically typed languages like Java or C++.',
               },
             },
-            image_1: {
-              type: 'image',
+            diagram_1: {
+              type: 'diagram',
               props: {
-                url: '/images/python-code-editor.jpg',
-                alt: 'A code editor showing Python code with syntax highlighting',
-                caption: 'Python code in a modern editor — no type annotations needed',
+                id: 'python-runtime-typing',
+                caption:
+                  'At each assignment, the name points to an object; its type is whatever that object is—decided when the code runs, not ahead of time.',
               },
             },
           },
@@ -308,14 +342,15 @@ else:
               },
             },
             quiz_1: {
-              type: 'quiz',
+              type: 'htmlquiz',
               props: {
-                question: 'In Python, what determines which lines belong to an if block?',
-                choices: [
-                  'Curly braces { }',
-                  'A colon at the end of the block',
-                  'Indentation — consistent leading whitespace',
-                  'The keyword "end"',
+                questionPlain: 'In Python, what determines which lines belong to an if block?',
+                questionHtml: `<p style="margin:0;color:#f0f1f5;font-weight:600">In Python, what decides which lines belong to an <code style="color:#a5b4fc;font-family:ui-monospace,monospace;font-size:0.95em">if</code> block?</p><p style="margin:10px 0 0;font-size:12px;font-weight:400;color:#9ca3af;line-height:1.45">Each option shows a snippet — pick the one that reflects how Python groups a block.</p>`,
+                choiceHtmls: [
+                  `<div style="text-align:left"><div style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.5;color:#c8cad4;background:#13151c;padding:8px;border-radius:6px;border:1px solid #3a3f52">if x &gt; 0 {<br/><span style="display:inline-block;padding-left:12px">print(x)</span><br/>}</div><div style="margin-top:6px;font-size:10px;color:#9ca3af">Braces grouping the lines</div></div>`,
+                  `<div style="text-align:left"><div style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.5;color:#c8cad4;background:#13151c;padding:8px;border-radius:6px;border:1px solid #3a3f52">if x &gt; 0:<br/><span style="color:#6b7280"># no indented body under the header</span></div><div style="margin-top:6px;font-size:10px;color:#9ca3af">Colon with no body lines shown</div></div>`,
+                  `<div style="text-align:left"><div style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.5;color:#c8cad4;background:#13151c;padding:8px;border-radius:6px;border:1px solid #3a3f52"><span style="color:#c678dd">if</span> score &gt;= 90:<br/><span style="display:inline-block;padding-left:1rem;margin-left:2px;border-left:2px solid #6c63ff;padding-left:10px">grade = &quot;A&quot;</span></div><div style="margin-top:6px;font-size:10px;color:#9ca3af">Indented lines following the header</div></div>`,
+                  `<div style="text-align:left"><div style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.5;color:#c8cad4;background:#13151c;padding:8px;border-radius:6px;border:1px solid #3a3f52">if x &gt; 0<br/>end</div><div style="margin-top:6px;font-size:10px;color:#9ca3af">Keyword to close the block</div></div>`,
                 ],
                 correct: 2,
                 explanation:
@@ -976,14 +1011,35 @@ Key insight: velocity is the slope of the position-time graph. Acceleration is t
               },
             },
             quiz_1: {
-              type: 'quiz',
+              type: 'htmlquiz',
               props: {
-                question: 'A car travels 100 m east, then 100 m west, returning to its start. Its distance is 200 m. What is its displacement?',
-                choices: [
-                  '200 m',
-                  '100 m east',
-                  '0 m',
-                  '200 m east',
+                questionPlain:
+                  'A car travels 100 m east then 100 m west back to the start. Distance is 200 m. What is displacement?',
+                questionHtml: `<div>
+  <p style="margin:0 0 10px;color:#f0f1f5;font-weight:600;line-height:1.45">A car travels <strong style="color:#a5b4fc">100 m east</strong>, then <strong style="color:#6ee7b7">100 m west</strong> and returns to its start. Distance traveled is 200 m. What is the <strong>displacement</strong>?</p>
+  <div style="padding:12px;border-radius:10px;background:#0a0c10;border:1px solid #1e2130">
+    <svg viewBox="0 0 380 78" width="100%" style="max-height:96px;display:block" aria-hidden="true" focusable="false">
+      <defs>
+        <marker id="hqM01East" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill="#6c63ff"/></marker>
+        <marker id="hqM01West" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto"><path d="M7 0 L0 3.5 L7 7 Z" fill="#34d399"/></marker>
+      </defs>
+      <line x1="28" y1="40" x2="352" y2="40" stroke="#3a3f52" stroke-width="2"/>
+      <circle cx="28" cy="40" r="7" fill="#6c63ff"/>
+      <text x="28" y="66" text-anchor="middle" fill="#9ca3af" font-family="system-ui,sans-serif" font-size="11">Start = finish</text>
+      <line x1="28" y1="40" x2="200" y2="40" stroke="#6c63ff" stroke-width="2.5" marker-end="url(#hqM01East)"/>
+      <text x="110" y="28" text-anchor="middle" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="11">100 m east</text>
+      <circle cx="200" cy="40" r="6" fill="#fbbf24" stroke="#fbbf24" stroke-width="1"/>
+      <line x1="200" y1="40" x2="28" y2="40" stroke="#34d399" stroke-width="2.5" marker-end="url(#hqM01West)"/>
+      <text x="110" y="58" text-anchor="middle" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="11">100 m west (back)</text>
+    </svg>
+    <p style="margin:6px 0 0;font-size:11px;color:#6b7280;line-height:1.4;text-align:center">Net change in position from start arrow to final arrow tip.</p>
+  </div>
+</div>`,
+                choiceHtmls: [
+                  `<span style="font-family:ui-monospace,monospace;font-weight:600;color:#c8cad4">200 m</span>`,
+                  `<span style="font-family:ui-monospace,monospace;font-weight:600;color:#c8cad4">100 m east</span>`,
+                  `<span style="font-family:ui-monospace,monospace;font-weight:600;color:#c8cad4">0 m</span>`,
+                  `<span style="font-family:ui-monospace,monospace;font-weight:600;color:#c8cad4">200 m east</span>`,
                 ],
                 correct: 2,
                 explanation:
@@ -1144,7 +1200,7 @@ Kinematics tells us *how* objects move. Chapter 2 asks *why* — and the answer 
           id: 'mech_ch02_01',
           chapter: 'mech_chapter_02',
           purpose: "Introduce Newton's First Law — the law of inertia",
-          layout: { template: 'two-col', regions: { left: 'text_1', right: 'image_1' } },
+          layout: { template: 'two-col', regions: { left: 'text_1', right: 'html_1' } },
           content: {
             text_1: {
               type: 'text',
@@ -1160,12 +1216,30 @@ This is profoundly non-obvious. Everyday experience suggests that moving things 
 The First Law also defines what we mean by a **net force**: the vector sum of all forces acting on an object. If the net force is zero, there is no acceleration.`,
               },
             },
-            image_1: {
-              type: 'image',
+            html_1: {
+              type: 'htmlcss',
               props: {
-                url: '/images/ice-rink.jpg',
-                alt: 'Ice rink surface representing frictionless motion and inertia',
-                caption: 'Near-frictionless surfaces reveal inertia — objects keep moving without a push',
+                html: `<div style="height:100%;min-height:240px;width:100%;position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#0c1118 0%,#141c28 42%,#152a38 100%);font-family:ui-sans-serif,system-ui,sans-serif;">
+  <div style="position:absolute;inset:0;opacity:0.35;background:repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(200,230,255,0.04) 48px,rgba(200,230,255,0.04) 50px);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:linear-gradient(180deg,rgba(140,200,255,0.06) 0%,rgba(100,180,230,0.2) 35%,rgba(70,150,210,0.35) 100%);border-top:2px solid rgba(200,235,255,0.45);box-shadow:inset 0 12px 24px rgba(255,255,255,0.12);"></div>
+  <div style="position:absolute;bottom:38%;left:8%;right:8%;height:3px;background:rgba(200,235,255,0.15);border-radius:2px;"></div>
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);text-align:center;width:100%;z-index:2;">
+    <div style="display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px;">
+      <span style="padding:5px 10px;border-radius:999px;background:rgba(108,99,255,0.2);border:1px solid rgba(108,99,255,0.45);color:#a5b4fc;font-size:11px;font-weight:600;">ΣF = 0</span>
+      <span style="padding:5px 10px;border-radius:999px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.4);color:#6ee7b7;font-size:11px;font-weight:600;">a = 0</span>
+      <span style="padding:5px 10px;border-radius:999px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.45);color:#fcd34d;font-size:11px;font-weight:600;">v constant</span>
+    </div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-top:8px;">
+      <div style="position:absolute;left:12%;right:12%;top:50%;height:4px;margin-top:-2px;background:linear-gradient(90deg,transparent 0%,rgba(108,99,255,0.25) 15%,rgba(108,99,255,0.5) 50%,rgba(108,99,255,0.25) 85%,transparent 100%);border-radius:2px;"></div>
+      <div style="position:absolute;left:calc(50% + 72px);top:50%;transform:translateY(-50%);width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:14px solid #6c63ff;filter:drop-shadow(0 0 6px rgba(108,99,255,0.6));"></div>
+      <div style="position:relative;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#6b7280,#374151 55%,#111827);border:2px solid #9ca3af;box-shadow:0 8px 20px rgba(0,0,0,0.55),inset 0 -4px 8px rgba(0,0,0,0.35);z-index:3;"></div>
+    </div>
+    <p style="margin:18px 12px 0;font-size:10px;color:#6b7280;line-height:1.45;max-width:280px;margin-left:auto;margin-right:auto;"><strong style="color:#9ca3af;">Weight</strong> and <strong style="color:#9ca3af;">normal</strong> cancel vertically. With negligible <strong style="color:#9ca3af;">friction</strong>, ΣF along the ice ≈ 0 → <strong style="color:#9ca3af;">a</strong> = 0 → <strong style="color:#9ca3af;">v</strong> unchanged.</p>
+  </div>
+  <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:9px;color:rgba(200,220,255,0.35);letter-spacing:0.06em;">ICE · NEAR-ZERO FRICTION</div>
+</div>`,
+                caption:
+                  'Diagram: weight and normal cancel vertically; with almost no friction there is no net force along the ice, so acceleration is zero and velocity stays constant.',
               },
             },
           },
@@ -1401,7 +1475,13 @@ Chapter 3 introduces **energy and work** — a powerful alternative framework fo
 
 // ─── All curricula ────────────────────────────────────────────────────────────
 
-export const allCurricula: Curriculum[] = [pythonCurriculum, mechanicsCurriculum]
+export const allCurricula: Curriculum[] = [
+  pythonCurriculum,
+  mechanicsCurriculum,
+  englishPhrasalVerbsCurriculum,
+]
+
+export { englishPhrasalVerbsCurriculum } from './englishPhrasalCurriculum'
 
 // Default export kept for backwards compatibility
 export const curriculum = pythonCurriculum

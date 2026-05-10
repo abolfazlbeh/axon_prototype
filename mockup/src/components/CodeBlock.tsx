@@ -1,4 +1,5 @@
 import type React from 'react'
+import { MarkdownContent } from './MarkdownContent'
 
 interface CodeProps {
   language: string
@@ -13,28 +14,53 @@ const LANGUAGE_LABELS: Record<string, string> = {
   bash: 'Bash',
   sql: 'SQL',
   json: 'JSON',
+  markdown: 'Markdown',
+  text: 'Plain text',
 }
 
 export function CodeBlock({ language, code, caption }: CodeProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="rounded-xl overflow-hidden border border-[#1e2130]">
-        <div className="flex items-center justify-between px-4 py-2 bg-[#0d0e13] border-b border-[#1e2130]">
-          <div className="flex gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#1e2130]" />
-            <span className="w-3 h-3 rounded-full bg-[#1e2130]" />
-            <span className="w-3 h-3 rounded-full bg-[#1e2130]" />
+  if (language === 'markdown') {
+    return (
+      <div className="flex min-w-0 max-w-full flex-col gap-2">
+        <div className="overflow-hidden rounded-xl border border-[#1e2130] min-w-0 max-w-full">
+          <div className="flex items-center justify-between border-b border-[#1e2130] bg-[#0d0e13] px-4 py-2">
+            <div className="flex gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+              <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+              <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+            </div>
+            <span className="font-mono text-xs uppercase tracking-wider text-[#3a3f52]">
+              {LANGUAGE_LABELS[language] ?? language}
+            </span>
           </div>
-          <span className="text-xs text-[#3a3f52] font-mono uppercase tracking-wider">
+          <div className="bg-[#13151c] p-4 min-w-0 max-w-full">
+            <MarkdownContent>{code}</MarkdownContent>
+          </div>
+        </div>
+        {caption && <p className="text-xs italic text-[#6b7280]">{caption}</p>}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-w-0 max-w-full flex-col gap-2">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-xl border border-[#1e2130]">
+        <div className="flex items-center justify-between border-b border-[#1e2130] bg-[#0d0e13] px-4 py-2">
+          <div className="flex gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+            <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+            <span className="h-3 w-3 rounded-full bg-[#1e2130]" />
+          </div>
+          <span className="font-mono text-xs uppercase tracking-wider text-[#3a3f52]">
             {LANGUAGE_LABELS[language] ?? language}
           </span>
         </div>
-        <pre className="bg-[#13151c] p-4 overflow-x-auto text-sm leading-relaxed">
+        <pre className="max-w-full bg-[#13151c] p-4 text-sm leading-relaxed overflow-x-auto">
           <code className="font-mono text-[#c8cad4]">{colorize(code, language)}</code>
         </pre>
       </div>
       {caption && (
-        <p className="text-xs text-[#6b7280] italic">{caption}</p>
+        <p className="text-xs italic text-[#6b7280]">{caption}</p>
       )}
     </div>
   )

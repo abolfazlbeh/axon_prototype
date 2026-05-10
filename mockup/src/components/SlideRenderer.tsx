@@ -9,6 +9,8 @@ import { QuizBlock } from './QuizBlock'
 import { DiagramBlock } from './DiagramBlock'
 import { AudioBlock } from './AudioBlock'
 import { VideoBlock } from './VideoBlock'
+import { HtmlCssBlock } from './HtmlCssBlock'
+import { HtmlQuizBlock } from './HtmlQuizBlock'
 
 interface SlideRendererProps {
   slide: Slide
@@ -44,6 +46,15 @@ function renderContent(
       return <AudioBlock {...content.props} />
     case 'video':
       return <VideoBlock {...content.props} />
+    case 'htmlcss':
+      return <HtmlCssBlock {...content.props} />
+    case 'htmlquiz':
+      return (
+        <HtmlQuizBlock
+          {...content.props}
+          onAnswer={(correct) => onQuizAnswer?.(slideId, correct)}
+        />
+      )
     default:
       return null
   }

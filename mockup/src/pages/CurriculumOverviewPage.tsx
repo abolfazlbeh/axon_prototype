@@ -6,6 +6,7 @@ import { allCurricula } from '../data/curriculum'
 const COURSE_ICONS: Record<string, string> = {
   'curr_python_001': '🐍',
   'curr_mechanics_001': '⚛',
+  'curr_english_pv_001': '📚',
 }
 
 export function CurriculumOverviewPage() {
@@ -20,6 +21,19 @@ export function CurriculumOverviewPage() {
   )
   const totalSlides = curriculum.chapters.reduce((sum, ch) => sum + ch.slides.length, 0)
   const overallProgress = Math.round((completedSlides / totalSlides) * 100)
+
+  const primaryChapter =
+    curriculum.chapters.find((ch) => ch.status === 'in-progress') ??
+    curriculum.chapters.find((ch) => ch.status !== 'locked' && ch.progress < 100) ??
+    [...curriculum.chapters].reverse().find((ch) => ch.status !== 'locked') ??
+    curriculum.chapters[0]
+  const courseResumeSlideIdx =
+    primaryChapter && primaryChapter.slides.length > 0
+      ? Math.min(
+          Math.floor(primaryChapter.slides.length * (primaryChapter.progress / 100)),
+          primaryChapter.slides.length - 1,
+        )
+      : 0
 
   return (
     <div className="p-8 max-w-3xl">
@@ -48,7 +62,9 @@ export function CurriculumOverviewPage() {
         <p className="text-[#6b7280] text-sm leading-relaxed max-w-xl">{curriculum.description}</p>
 
         <div className="flex gap-4 mt-4 text-xs text-[#3a3f52]">
-          <span>{curriculum.totalChapters} chapters</span>
+          <span>
+            {curriculum.streamMode ? 'Single learning stream' : `${curriculum.totalChapters} chapters`}
+          </span>
           <span>·</span>
           <span>{totalSlides} slides</span>
           <span>·</span>
@@ -58,9 +74,22 @@ export function CurriculumOverviewPage() {
 
       {/* Overall progress */}
       <div className="bg-[#13151c] border border-[#1e2130] rounded-xl p-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <span className="text-sm font-medium text-[#c8cad4]">Overall Progress</span>
-          <span className="text-sm font-bold text-[#f0f1f5]">{overallProgress}%</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-bold text-[#f0f1f5]">{overallProgress}%</span>
+            {primaryChapter && primaryChapter.status !== 'locked' && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(`/slide/${primaryChapter.id}/${courseResumeSlideIdx}`)
+                }
+                className="shrink-0 rounded-lg bg-[#6c63ff] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5b54e8] active:scale-[0.98]"
+              >
+                {overallProgress >= 100 ? 'Review' : overallProgress > 0 ? 'Continue' : 'Start'}
+              </button>
+            )}
+          </div>
         </div>
         <div className="h-2 bg-[#0d0e13] rounded-full overflow-hidden">
           <motion.div
@@ -129,19 +158,44 @@ export function CurriculumOverviewPage() {
                   {chapter.status === 'completed' ? '✓' : chapter.status === 'locked' ? '🔒' : String(idx + 1).padStart(2, '0')}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base font-semibold text-[#f0f1f5]">
-                      Chapter {idx + 1} — {chapter.title}
-                    </h3>
-                    {chapter.status === 'completed' && (
-                      <span className="text-xs bg-[rgba(52,211,153,0.1)] text-[#34d399] px-2 py-0.5 rounded-full">
-                        Complete
-                      </span>
-                    )}
-                    {chapter.status === 'in-progress' && (
-                      <span className="text-xs bg-[rgba(108,99,255,0.1)] text-[#6c63ff] px-2 py-0.5 rounded-full">
-                        In progress
-                      </span>
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold text-[#f0f1f5]">
+                        {curriculum.streamMode
+                          ? chapter.title
+                          : `Chapter ${idx + 1} — ${chapter.title}`}
+                      </h3>
+                      {chapter.status === 'completed' && (
+                        <span className="text-xs bg-[rgba(52,211,153,0.1)] text-[#34d399] px-2 py-0.5 rounded-full">
+                          Complete
+                        </span>
+                      )}
+                      {chapter.status === 'in-progress' && (
+                        <span className="text-xs bg-[rgba(108,99,255,0.1)] text-[#6c63ff] px-2 py-0.5 rounded-full">
+                          In progress
+                        </span>
+                      )}
+                    </div>
+                    {chapter.status !== 'locked' && chapter.slides.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const resume = Math.min(
+                            Math.floor(
+                              chapter.slides.length * (chapter.progress / 100),
+                            ),
+                            chapter.slides.length - 1,
+                          )
+                          navigate(`/slide/${chapter.id}/${resume}`)
+                        }}
+                        className="shrink-0 rounded-lg bg-[#6c63ff] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#5b54e8] active:scale-[0.98]"
+                      >
+                        {chapter.progress >= 100
+                          ? 'Review'
+                          : chapter.progress > 0
+                            ? 'Continue'
+                            : 'Start'}
+                      </button>
                     )}
                   </div>
                   <p className="text-xs text-[#6b7280] leading-relaxed mb-3">{chapter.summary}</p>
@@ -194,6 +248,7 @@ export function CurriculumOverviewPage() {
                   ))}
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     const slideIdx = Math.min(
                       Math.floor(chapter.slides.length * chapter.progress / 100),
@@ -201,9 +256,9 @@ export function CurriculumOverviewPage() {
                     )
                     navigate(`/slide/${chapter.id}/${slideIdx}`)
                   }}
-                  className="text-xs font-medium text-[#6c63ff] hover:text-[#a78bfa] transition-colors"
+                  className="text-xs font-semibold text-[#6c63ff] hover:text-[#a78bfa] transition-colors px-1"
                 >
-                  {chapter.progress === 100 ? 'Review' : chapter.progress > 0 ? 'Continue →' : 'Start →'}
+                  {chapter.progress === 100 ? 'Review →' : chapter.progress > 0 ? 'Continue →' : 'Start →'}
                 </button>
               </div>
             )}

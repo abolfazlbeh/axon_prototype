@@ -81,8 +81,8 @@ export function SlideViewerPage() {
         </div>
       </div>
 
-      {/* Slide content */}
-      <div className="flex-1 overflow-hidden px-8 py-6">
+      {/* Slide content — scrolls when taller than viewport (header + footer stay fixed) */}
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-8 py-6">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={slide.id}
@@ -91,7 +91,7 @@ export function SlideViewerPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: direction * -30 }}
             transition={{ duration: 0.25 }}
-            className="h-full"
+            className="w-full min-h-0 min-w-0"
           >
             <SlideRenderer slide={slide} />
           </motion.div>

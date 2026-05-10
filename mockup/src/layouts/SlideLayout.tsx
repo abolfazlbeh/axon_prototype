@@ -10,51 +10,51 @@ export function SlideLayout({ template, regions }: LayoutProps) {
   switch (template) {
     case 'single-col':
       return (
-        <div className="h-full flex flex-col gap-6">
+        <div className="flex w-full min-w-0 flex-col gap-6">
           {regions.main}
         </div>
       )
 
     case 'two-col':
       return (
-        <div className="h-full grid grid-cols-2 gap-6">
-          <div className="overflow-auto">{regions.left}</div>
-          <div className="overflow-auto">{regions.right}</div>
+        <div className="grid w-full min-w-0 grid-cols-2 gap-6 items-start">
+          <div className="min-w-0">{regions.left}</div>
+          <div className="min-w-0">{regions.right}</div>
         </div>
       )
 
     case 'two-col-right-split':
       return (
-        <div className="h-full grid grid-cols-2 gap-6">
-          <div className="overflow-auto">{regions.left}</div>
-          <div className="grid grid-rows-2 gap-4">
-            <div className="overflow-auto">{regions['right-top']}</div>
-            <div className="overflow-auto">{regions['right-bottom']}</div>
+        <div className="grid w-full min-w-0 grid-cols-2 gap-6 items-start">
+          <div className="min-w-0">{regions.left}</div>
+          <div className="flex min-w-0 flex-col gap-4">
+            {regions['right-top']}
+            {regions['right-bottom']}
           </div>
         </div>
       )
 
     case 'two-col-left-split':
       return (
-        <div className="h-full grid grid-cols-2 gap-6">
-          <div className="grid grid-rows-2 gap-4">
-            <div className="overflow-auto">{regions['left-top']}</div>
-            <div className="overflow-auto">{regions['left-bottom']}</div>
+        <div className="grid w-full min-w-0 grid-cols-2 gap-6 items-start">
+          <div className="flex min-w-0 flex-col gap-4">
+            {regions['left-top']}
+            {regions['left-bottom']}
           </div>
-          <div className="overflow-auto">{regions.right}</div>
+          <div className="min-w-0">{regions.right}</div>
         </div>
       )
 
     case 'stacked-vertical':
       return (
-        <div className="h-full flex flex-col gap-5">
-          {regions.top && <div>{regions.top}</div>}
-          {regions.middle && <div className="flex-1 overflow-auto">{regions.middle}</div>}
-          {regions.bottom && <div>{regions.bottom}</div>}
+        <div className="flex w-full min-w-0 flex-col gap-5">
+          {regions.top && <div className="min-w-0">{regions.top}</div>}
+          {regions.middle && <div className="min-w-0">{regions.middle}</div>}
+          {regions.bottom && <div className="min-w-0">{regions.bottom}</div>}
         </div>
       )
 
     default:
-      return <div className="h-full">{Object.values(regions)}</div>
+      return <div className="w-full min-w-0">{Object.values(regions)}</div>
   }
 }
